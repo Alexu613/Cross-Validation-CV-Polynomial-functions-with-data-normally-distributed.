@@ -1,0 +1,90 @@
+#Import libraries 
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt
+%matplotlib inline 
+# displaying the chart in the console
+
+# Generating a random sample of data
+np.random.seed(2)
+
+# Let be X a random variable that follows a gaussian distribution
+# Mean = 0, Variance =1  and Number of obs = 500.
+X = np.random.normal(0,1,500)
+# Optional : Display the random sample 
+print(X)
+
+#Let be 'Epsilon' the disturbance that also follows a gaussian distribution
+Epsilon = np.random.normal(0,1,500)
+
+# We define the quadratic function as follows 
+Y = 2*(X**2) + X + 1 + Epsilon
+
+# We are going to plot the output by using the matplotlib package
+# Customize your chart
+plt.style.available # display all the templates
+plt.style.use('seaborn') 
+
+# Plot side-by-side
+fig, ax = plt.subplots(1,2, figsize=(15,5))
+
+#Chart 1 (displayed in the left side) : Quadratic Function
+ax[0].scatter(X,Y, color='black', label= 'y=f(x)', lw=1)
+ax[0].grid(True)
+ax[0].set_xlabel('X values')
+ax[0].set_ylabel('Y values')
+ax[0].set_title('Quadratic Function Normally Distributed')
+ax[0].legend()
+
+#Chart 1 (displayed in the right side) : Distribution of X (Normal)
+ax[1].hist(X, bins=15, color='black', label= 'Distribution of X', lw=1)
+ax[1].grid(True)
+ax[1].set_xlabel('X')
+ax[1].set_ylabel('Frequency')
+ax[1].set_title('Distribution of X')
+ax[1].legend()
+
+# Let's create a DataFrame including the variables Y and X
+df = pd.DataFrame({'Y': Y, 'X': X})
+# Display the first 5 rows from the new DataFrame
+df.head(5)
+
+# Train set (random)
+train_df = df.sample(500, random_state = 1)
+train_df
+
+Testdf = df[~df.isin(train_df)].dropna(how = 'all')
+
+# Training set X and Y , Test set X and Y
+Xtrain = train_df['X'].values.reshape(-1,1)
+Ytrain = train_df['Y']
+Xtest = Testdf['X'].values.reshape(-1,1)
+Ytest = Testdf['Y']
+
+# Librairies Poly, LinearRegression, KFold and CV
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+regression = LinearRegression().fit(Xtrain,Ytrain)
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
+
+x=df['X'].values.reshape(-1,1)
+y=df['Y'].values.reshape(-1,1)
+
+# Cross-Validation n_splits = 500 = n = LOOCV
+CV = KFold(n_splits=500, random_state=None, shuffle=False)
+Scores = cross_val_score(regression, x, y, scoring="neg_mean_squared_error",
+cv=CV, n_jobs=1)
+print("Folds: " + str(len(Scores)) + ", MSE (Mean Sq.Error): " + str(np.mean(np.
+abs(Scores)))
++ ", STD: " + str(np.std(Scores)))
+
+# What is the best Polynomial Degree ?
+for i in range(1,5):
+  poly = PolynomialFeatures(degree=i)
+  x_poly = poly.fit_transform(x)
+  model = LinearRegression().fit(x_poly, Y)
+  Scores = cross_val_score(model, x_poly, Y, scoring = "neg_mean_squared_error", cv=CV, n_jobs=1)
+
+  print("Polynomial Degree" + str(i)+"MSE(Mean Sq.Error):" + str(np.mean(np.abs(Scores))) + ", STD:" 
+        + str(np.std(Scores)))
