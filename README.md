@@ -1,0 +1,2 @@
+# Cross-Validation-CV-Polynomial-functions-with-data-normally-distributed.
+Cross-Validation (CV) : Polynomial functions with data normally distributed. We generate a random sample of 500 observations that follow a gaussian distribution. This is a good example to see how we can use the method of Leave One Out Cross-Validation (LOOCV) to assess the best polynomial degree that minimizes the mean squared error (MSE) of our test set 
